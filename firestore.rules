@@ -1,0 +1,85 @@
+rules_version = '2';
+
+// Client-submitted game scores can be shape- and bounds-checked here, but a
+// browser game cannot be fully cheat-proof without trusted server validation.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function hasValidScoreFields() {
+      let data = request.resource.data;
+      let fields = [
+        'uid',
+        'playerName',
+        'score',
+        'booksCaught',
+        'goldenBooksCaught',
+        'phoneItemsCaught',
+        'coffeeItemsCaught',
+        'totalDistractionsCaught',
+        'gameDurationSeconds',
+        'gameVersion',
+        'createdAt'
+      ];
+
+      return data.keys().hasAll(fields)
+        && data.keys().hasOnly(fields);
+    }
+
+    function hasValidIdentity() {
+      let data = request.resource.data;
+      return request.auth != null
+        && data.uid is string
+        && data.uid == request.auth.uid
+        && data.playerName is string
+        && data.playerName.size() >= 2
+        && data.playerName.size() <= 20;
+    }
+
+    function hasValidNumbers() {
+      let data = request.resource.data;
+      return data.score is int
+        && data.score >= 0
+        && data.score <= 100000
+        && data.booksCaught is int
+        && data.booksCaught >= 0
+        && data.booksCaught <= 1000
+        && data.goldenBooksCaught is int
+        && data.goldenBooksCaught >= 0
+        && data.goldenBooksCaught <= 1000
+        && data.phoneItemsCaught is int
+        && data.phoneItemsCaught >= 0
+        && data.phoneItemsCaught <= 1000
+        && data.coffeeItemsCaught is int
+        && data.coffeeItemsCaught >= 0
+        && data.coffeeItemsCaught <= 1000
+        && data.totalDistractionsCaught is int
+        && data.totalDistractionsCaught >= 0
+        && data.totalDistractionsCaught <= 2000
+        && data.score
+          <= data.booksCaught * 10 + data.goldenBooksCaught * 30
+        && data.totalDistractionsCaught
+          == data.phoneItemsCaught + data.coffeeItemsCaught;
+    }
+
+    function hasValidGameMetadata() {
+      let data = request.resource.data;
+      return data.gameDurationSeconds is int
+        && data.gameDurationSeconds == 30
+        && data.gameVersion is string
+        && data.gameVersion.size() > 0
+        && data.gameVersion.size() <= 20
+        && data.createdAt == request.time;
+    }
+
+    match /scores/{scoreId} {
+      allow create: if hasValidScoreFields()
+        && hasValidIdentity()
+        && hasValidNumbers()
+        && hasValidGameMetadata();
+
+      allow get: if request.auth != null;
+      allow list: if request.auth != null
+        && request.query.limit <= 10;
+      allow update, delete: if false;
+    }
+  }
+}

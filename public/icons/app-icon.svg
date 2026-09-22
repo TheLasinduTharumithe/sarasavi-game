@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Open book above a basket">
+  <rect width="512" height="512" fill="#1f3a5f"/>
+  <circle cx="256" cy="242" r="176" fill="#f7f1e3"/>
+  <path d="M256 151c-42-30-91-38-144-23v156c54-14 102-7 144 24z" fill="#ffffff" stroke="#c0392b" stroke-width="16" stroke-linejoin="round"/>
+  <path d="M256 151c42-30 91-38 144-23v156c-54-14-102-7-144 24z" fill="#fff8e7" stroke="#c0392b" stroke-width="16" stroke-linejoin="round"/>
+  <path d="M256 155v153" stroke="#c0392b" stroke-width="13" stroke-linecap="round"/>
+  <path d="M148 181c30-5 55-1 78 10M148 222c30-5 55-1 78 10M364 181c-30-5-55-1-78 10M364 222c-30-5-55-1-78 10" fill="none" stroke="#e3cda9" stroke-width="10" stroke-linecap="round"/>
+  <path d="M151 338h210l-20 93H171z" fill="#f5a623" stroke="#8b5a2b" stroke-width="16" stroke-linejoin="round"/>
+  <path d="M192 339c4-58 31-87 64-87s60 29 64 87" fill="none" stroke="#8b5a2b" stroke-width="16" stroke-linecap="round"/>
+  <path d="M210 358l5 52M256 355v58M302 358l-5 52" stroke="#c87518" stroke-width="11" stroke-linecap="round"/>
+</svg>
