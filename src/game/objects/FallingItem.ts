@@ -1,4 +1,5 @@
 import Phaser from 'phaser'
+import { BOOK_EMBLEM_TEXTURE_KEY } from '../constants'
 import type { FallingItemType } from '../types'
 
 interface BookStyle {
@@ -90,6 +91,7 @@ export class FallingItem extends Phaser.Physics.Arcade.Sprite {
     FallingItem.drawBook(graphic, style.coverColor, style.spineColor)
     graphic.generateTexture(style.textureKey, ITEM_WIDTH, ITEM_HEIGHT)
     graphic.destroy()
+    FallingItem.addBookEmblem(scene, style.textureKey, 44, 52, 27)
   }
 
   private static createGoldenBookTexture(scene: Phaser.Scene): void {
@@ -101,11 +103,56 @@ export class FallingItem extends Phaser.Physics.Arcade.Sprite {
     const graphic = scene.add.graphics().setVisible(false)
     FallingItem.drawBook(graphic, 0xf6c945, 0xc28c12)
     graphic.fillStyle(0x8f6511, 1)
-    graphic.fillPoints(FallingItem.createStarPoints(45, 52, 13, 6), true)
+    graphic.fillPoints(FallingItem.createStarPoints(56, 19, 9, 4), true)
     graphic.fillStyle(0xfff4b8, 1)
-    graphic.fillPoints(FallingItem.createStarPoints(45, 52, 7, 3), true)
+    graphic.fillPoints(FallingItem.createStarPoints(56, 19, 5, 2), true)
     graphic.generateTexture(textureKey, ITEM_WIDTH, ITEM_HEIGHT)
     graphic.destroy()
+    FallingItem.addBookEmblem(scene, textureKey, 43, 53, 31)
+  }
+
+  private static addBookEmblem(
+    scene: Phaser.Scene,
+    bookTextureKey: string,
+    centerX: number,
+    centerY: number,
+    size: number,
+  ): void {
+    if (!scene.textures.exists(BOOK_EMBLEM_TEXTURE_KEY)) {
+      return
+    }
+
+    const bookTexture = scene.textures.get(
+      bookTextureKey,
+    ) as Phaser.Textures.CanvasTexture
+    const bookCanvas = bookTexture.getSourceImage()
+    const emblemSource = scene.textures
+      .get(BOOK_EMBLEM_TEXTURE_KEY)
+      .getSourceImage() as CanvasImageSource
+
+    if (!(bookCanvas instanceof HTMLCanvasElement)) {
+      return
+    }
+
+    const context = bookCanvas.getContext('2d')
+    if (!context) {
+      return
+    }
+
+    const halfSize = size / 2
+    context.save()
+    context.beginPath()
+    context.arc(centerX, centerY, halfSize, 0, Math.PI * 2)
+    context.clip()
+    context.drawImage(
+      emblemSource,
+      centerX - halfSize,
+      centerY - halfSize,
+      size,
+      size,
+    )
+    context.restore()
+    bookTexture.refresh()
   }
 
   private static createPhoneTexture(scene: Phaser.Scene): void {

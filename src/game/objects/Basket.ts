@@ -8,12 +8,22 @@ interface BasketControlKeys {
   d: Phaser.Input.Keyboard.Key
 }
 
+interface BasketTouchControl {
+  container: Phaser.GameObjects.Container
+  background: Phaser.GameObjects.Graphics
+  direction: -1 | 1
+}
+
 const BASKET_WIDTH = 220
 const BASKET_HEIGHT = 150
 const BASKET_BOTTOM_OFFSET = 80
 const MAX_MOVE_SPEED = 650
 const MOVE_ACCELERATION = 2400
 const MOVE_DECELERATION = 3200
+const TOUCH_CONTROL_WIDTH = 160
+const TOUCH_CONTROL_HEIGHT = 88
+const TOUCH_CONTROL_SIDE_OFFSET = 110
+const TOUCH_CONTROL_BOTTOM_OFFSET = 190
 
 function moveTowards(current: number, target: number, maximumDelta: number): number {
   if (Math.abs(target - current) <= maximumDelta) {
@@ -26,6 +36,8 @@ function moveTowards(current: number, target: number, maximumDelta: number): num
 export class Basket extends Phaser.GameObjects.Container {
   private readonly basketGraphic: Phaser.GameObjects.Graphics
   private controlKeys?: BasketControlKeys
+  private readonly touchControls: BasketTouchControl[] = []
+  private touchDirection: -1 | 0 | 1 = 0
   private horizontalVelocity = 0
   private isDragging = false
   private gameplayInputEnabled = true
@@ -44,6 +56,7 @@ export class Basket extends Phaser.GameObjects.Container {
 
     this.configureKeyboardControls()
     this.configureDragControls()
+    this.createTouchControls()
 
     scene.scale.on(Phaser.Scale.Events.RESIZE, this.handleResize, this)
     scene.events.once(Phaser.Scenes.Events.SHUTDOWN, this.handleShutdown, this)
@@ -56,7 +69,7 @@ export class Basket extends Phaser.GameObjects.Container {
     }
 
     const deltaSeconds = Math.min(delta, 50) / 1000
-    const direction = this.getKeyboardDirection()
+    const direction = this.getMovementDirection()
     const targetVelocity = direction * MAX_MOVE_SPEED
     const acceleration =
       direction === 0 ? MOVE_DECELERATION : MOVE_ACCELERATION
@@ -80,6 +93,7 @@ export class Basket extends Phaser.GameObjects.Container {
     this.gameplayInputEnabled = enabled
     this.horizontalVelocity = 0
     this.isDragging = false
+    this.touchDirection = 0
 
     if (this.input) {
       this.input.enabled = enabled
@@ -92,6 +106,15 @@ export class Basket extends Phaser.GameObjects.Container {
       this.controlKeys.right.enabled = enabled
       this.controlKeys.a.enabled = enabled
       this.controlKeys.d.enabled = enabled
+    }
+
+    for (const control of this.touchControls) {
+      if (control.container.input) {
+        control.container.input.enabled = enabled
+      }
+      control.container.setAlpha(enabled ? 0.9 : 0.38)
+      control.container.setScale(1)
+      this.drawTouchControl(control, false)
     }
   }
 
@@ -196,6 +219,143 @@ export class Basket extends Phaser.GameObjects.Container {
     this.on(Phaser.Input.Events.DRAG_END, this.handleDragEnd, this)
   }
 
+  private createTouchControls(): void {
+    this.touchControls.push(
+      this.createTouchControl(-1, 'LEFT'),
+      this.createTouchControl(1, 'RIGHT'),
+    )
+    this.positionTouchControls(this.scene.scale.gameSize)
+    this.scene.input.on(
+      Phaser.Input.Events.POINTER_UP,
+      this.handleGlobalPointerRelease,
+      this,
+    )
+    this.scene.input.on(
+      Phaser.Input.Events.GAME_OUT,
+      this.handleGlobalPointerRelease,
+      this,
+    )
+  }
+
+  private createTouchControl(
+    direction: -1 | 1,
+    label: string,
+  ): BasketTouchControl {
+    const background = this.scene.add.graphics()
+    const text = this.scene.add
+      .text(0, 24, label, {
+        color: '#ffffff',
+        fontFamily: 'Arial, sans-serif',
+        fontSize: '16px',
+        fontStyle: 'bold',
+      })
+      .setOrigin(0.5)
+    const container = this.scene.add
+      .container(0, 0, [background, text])
+      .setDepth(90)
+      .setSize(TOUCH_CONTROL_WIDTH, TOUCH_CONTROL_HEIGHT)
+      .setInteractive({ useHandCursor: true })
+      .setName(`${label} BASKET CONTROL`)
+
+    const control: BasketTouchControl = {
+      container,
+      background,
+      direction,
+    }
+    this.drawTouchControl(control, false)
+
+    container.on(Phaser.Input.Events.POINTER_DOWN, () => {
+      if (!this.gameplayInputEnabled) {
+        return
+      }
+
+      this.isDragging = false
+      this.touchDirection = direction
+      this.horizontalVelocity = 0
+      container.setScale(0.97)
+      this.drawTouchControl(control, true)
+    })
+    container.on(Phaser.Input.Events.POINTER_UP, () => {
+      this.releaseTouchControl(direction)
+    })
+    container.on(Phaser.Input.Events.POINTER_OUT, () => {
+      this.releaseTouchControl(direction)
+    })
+
+    return control
+  }
+
+  private drawTouchControl(
+    control: BasketTouchControl,
+    active: boolean,
+  ): void {
+    const graphic = control.background
+    const halfWidth = TOUCH_CONTROL_WIDTH / 2
+    const halfHeight = TOUCH_CONTROL_HEIGHT / 2
+    graphic.clear()
+    graphic.fillStyle(0x35261e, 0.2)
+    graphic.fillRoundedRect(
+      -halfWidth + 3,
+      -halfHeight + 5,
+      TOUCH_CONTROL_WIDTH - 6,
+      TOUCH_CONTROL_HEIGHT,
+      22,
+    )
+    graphic.fillStyle(active ? 0x812c27 : 0x213a57, 0.9)
+    graphic.fillRoundedRect(
+      -halfWidth,
+      -halfHeight,
+      TOUCH_CONTROL_WIDTH,
+      TOUCH_CONTROL_HEIGHT,
+      22,
+    )
+    graphic.lineStyle(3, 0xfffcf4, active ? 1 : 0.78)
+    graphic.strokeRoundedRect(
+      -halfWidth,
+      -halfHeight,
+      TOUCH_CONTROL_WIDTH,
+      TOUCH_CONTROL_HEIGHT,
+      22,
+    )
+    graphic.fillStyle(0xfffcf4, 1)
+
+    if (control.direction === -1) {
+      graphic.fillTriangle(-30, -25, 8, -8, 8, -42)
+    } else {
+      graphic.fillTriangle(30, -25, -8, -42, -8, -8)
+    }
+  }
+
+  private releaseTouchControl(direction: -1 | 1): void {
+    if (this.touchDirection === direction) {
+      this.touchDirection = 0
+    }
+
+    const control = this.touchControls.find(
+      (touchControl) => touchControl.direction === direction,
+    )
+    if (control) {
+      control.container.setScale(1)
+      this.drawTouchControl(control, false)
+    }
+  }
+
+  private readonly handleGlobalPointerRelease = (): void => {
+    this.touchDirection = 0
+    for (const control of this.touchControls) {
+      control.container.setScale(1)
+      this.drawTouchControl(control, false)
+    }
+  }
+
+  private getMovementDirection(): number {
+    if (this.touchDirection !== 0) {
+      return this.touchDirection
+    }
+
+    return this.getKeyboardDirection()
+  }
+
   private getKeyboardDirection(): number {
     if (!this.controlKeys) {
       return 0
@@ -237,8 +397,22 @@ export class Basket extends Phaser.GameObjects.Container {
 
   private handleResize(gameSize: Phaser.Structs.Size): void {
     this.y = gameSize.height - BASKET_BOTTOM_OFFSET
+    this.positionTouchControls(gameSize)
     this.clampToGameBounds(gameSize.width)
     this.syncPhysicsBody()
+  }
+
+  private positionTouchControls(gameSize: Phaser.Structs.Size): void {
+    const y = Math.max(
+      TOUCH_CONTROL_HEIGHT / 2,
+      gameSize.height - TOUCH_CONTROL_BOTTOM_OFFSET,
+    )
+    const [leftControl, rightControl] = this.touchControls
+    leftControl?.container.setPosition(TOUCH_CONTROL_SIDE_OFFSET, y)
+    rightControl?.container.setPosition(
+      gameSize.width - TOUCH_CONTROL_SIDE_OFFSET,
+      y,
+    )
   }
 
   private syncPhysicsBody(): void {
@@ -270,6 +444,7 @@ export class Basket extends Phaser.GameObjects.Container {
     this.inputCleanedUp = true
     this.gameplayInputEnabled = false
     this.horizontalVelocity = 0
+    this.touchDirection = 0
     this.scene.tweens.killTweensOf(this.basketGraphic)
     this.scene.scale.off(Phaser.Scale.Events.RESIZE, this.handleResize, this)
     this.scene.events.off(
@@ -281,6 +456,22 @@ export class Basket extends Phaser.GameObjects.Container {
     this.off(Phaser.Input.Events.DRAG_START, this.handleDragStart, this)
     this.off(Phaser.Input.Events.DRAG, this.handleDrag, this)
     this.off(Phaser.Input.Events.DRAG_END, this.handleDragEnd, this)
+    this.scene.input.off(
+      Phaser.Input.Events.POINTER_UP,
+      this.handleGlobalPointerRelease,
+      this,
+    )
+    this.scene.input.off(
+      Phaser.Input.Events.GAME_OUT,
+      this.handleGlobalPointerRelease,
+      this,
+    )
+
+    for (const control of this.touchControls) {
+      control.container.removeAllListeners()
+      control.container.destroy()
+    }
+    this.touchControls.length = 0
 
     const keyboard = this.scene.input.keyboard
     if (keyboard && this.controlKeys) {

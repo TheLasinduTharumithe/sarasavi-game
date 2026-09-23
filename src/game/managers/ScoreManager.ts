@@ -27,7 +27,7 @@ export class ScoreManager {
     this.scene = scene
 
     scene.add
-      .text(SCORE_HUD_X, 24, 'SCORE', {
+      .text(SCORE_HUD_X, 30, 'SCORE', {
         color: '#1f3a5f',
         fontFamily: 'Arial, sans-serif',
         fontSize: '24px',
@@ -36,7 +36,7 @@ export class ScoreManager {
       .setDepth(100)
 
     this.scoreValueText = scene.add
-      .text(SCORE_HUD_X, 54, '000', {
+      .text(SCORE_HUD_X, 58, '000', {
         color: '#7b241c',
         fontFamily: 'Arial, sans-serif',
         fontSize: '36px',

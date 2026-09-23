@@ -184,7 +184,9 @@ Add the deployed domain to **Authentication → Settings → Authorized domains*
 
 - Logical canvas: 1280×720 using Phaser `FIT` and `CENTER_BOTH`
 - Landscape-first layout for Android tablets, laptops, and desktops
-- Smartphone view remains usable through proportional canvas scaling
+- Smartphone landscape view uses proportional scaling and enlarged touch controls
+- Portrait phones show a rotate-device overlay and pause an active round until landscape returns
+- Safe-area insets protect controls on notched mobile devices
 - Large controls, high-contrast text, keyboard movement, and touch dragging
 - Items use distinct silhouettes and marks, not color alone
 - Reduced-motion preference suppresses basket shake and strong pulse transitions
@@ -195,7 +197,7 @@ Add the deployed domain to **Authentication → Settings → Authorized domains*
 - Client-side games cannot be fully cheat-proof; Firestore rules validate shape and reasonable limits, not human play.
 - Anonymous identities are browser/profile-specific and may be lost when site data is cleared.
 - Pending scores use local storage and are limited to the ten most recent unsent rounds.
-- The game is landscape-first; very narrow portrait phones display a scaled-down playfield.
+- The game is landscape-first; portrait phones must rotate before continuing.
 - Audio is intentionally lightweight procedural Web Audio rather than recorded music.
 - Analytics is not enabled.
 

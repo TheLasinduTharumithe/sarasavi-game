@@ -46,7 +46,7 @@ export class ResultScene extends Phaser.Scene {
     createBrandLabel(this, 65)
 
     this.add
-      .text(centerX, 122, `GREAT JOB, ${this.playerName}!`, {
+      .text(centerX, 132, `GREAT JOB, ${this.playerName}!`, {
         color: '#7b241c',
         fontFamily: 'Arial, sans-serif',
         fontSize: '46px',

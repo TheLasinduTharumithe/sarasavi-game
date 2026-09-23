@@ -29,7 +29,7 @@ export class HowToPlayScene extends Phaser.Scene {
     FallingItem.createItemTextures(this)
 
     this.add
-      .text(centerX, 125, 'HOW TO PLAY', {
+      .text(centerX, 135, 'HOW TO PLAY', {
         color: '#1f3a5f',
         fontFamily: 'Arial, sans-serif',
         fontSize: '52px',
@@ -77,7 +77,7 @@ export class HowToPlayScene extends Phaser.Scene {
       .text(
         centerX,
         480,
-        'Keyboard:\nArrow Keys or A / D\n\nTouch:\nDrag the basket left or right',
+        'Keyboard:\nArrow Keys or A / D\n\nTouch:\nDrag the basket or hold the LEFT / RIGHT buttons',
         {
           align: 'center',
           color: '#1f3a5f',

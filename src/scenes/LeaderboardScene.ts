@@ -46,7 +46,7 @@ export class LeaderboardScene extends Phaser.Scene {
     createBrandLabel(this, 65)
 
     this.add
-      .text(centerX, 118, "TODAY'S TOP PLAYERS", {
+      .text(centerX, 130, "TODAY'S TOP PLAYERS", {
         color: '#1f3a5f',
         fontFamily: 'Arial, sans-serif',
         fontSize: '50px',

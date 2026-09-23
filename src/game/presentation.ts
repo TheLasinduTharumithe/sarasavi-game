@@ -1,5 +1,10 @@
 import Phaser from 'phaser'
-import { GAME_HEIGHT, GAME_WIDTH } from './constants'
+import {
+  BOOK_EMBLEM_SEAL_TEXTURE_KEY,
+  BOOK_EMBLEM_TEXTURE_KEY,
+  GAME_HEIGHT,
+  GAME_WIDTH,
+} from './constants'
 
 export const THEME = {
   ink: 0x213a57,
@@ -34,6 +39,10 @@ export function createBookFairBackground(
     graphic.fillRect(x, 16, 80, 28)
   }
   graphic.fillStyle(THEME.woodDark, 0.16).fillRect(0, 44, GAME_WIDTH, 4)
+
+  if (!options.gameplay) {
+    drawFairBunting(graphic)
+  }
 
   const shelfAlpha = options.gameplay ? 0.13 : 0.2
   drawShelf(graphic, 20, 180, shelfAlpha)
@@ -78,6 +87,23 @@ export function createPaperPanel(
     height,
     20,
   )
+  panel.fillStyle(THEME.red, 1).fillRoundedRect(
+    x - width / 2 + 16,
+    y - height / 2 + 9,
+    Math.max(24, width - 32),
+    5,
+    3,
+  )
+  panel.fillStyle(THEME.gold, 0.9).fillCircle(
+    x - width / 2 + 19,
+    y - height / 2 + 11,
+    3,
+  )
+  panel.fillCircle(
+    x + width / 2 - 19,
+    y - height / 2 + 11,
+    3,
+  )
   return panel
 }
 
@@ -86,18 +112,96 @@ export function createBrandLabel(
   y = 72,
 ): Phaser.GameObjects.Container {
   const mark = scene.add.graphics()
-  mark.fillStyle(THEME.red, 1).fillRoundedRect(-196, -25, 392, 50, 12)
-  mark.fillStyle(THEME.paper, 1).fillRect(-172, 12, 344, 4)
+  mark.fillStyle(0x35261e, 0.18).fillRoundedRect(-256, -31, 512, 68, 16)
+  mark.fillStyle(THEME.paper, 1).fillRoundedRect(-258, -35, 516, 68, 16)
+  mark.fillStyle(THEME.ink, 1).fillRoundedRect(-252, -29, 504, 58, 13)
+  mark.fillStyle(THEME.red, 1).fillRoundedRect(-252, 15, 504, 14, 5)
+  mark.fillStyle(THEME.gold, 1).fillRect(-185, 12, 405, 3)
+
+  const logo = createLogoSeal(scene, -214, 0, 58)
   const text = scene.add
-    .text(0, -2, 'SARASAVI BOOK FAIR', {
+    .text(32, -7, 'SARASAVI', {
       color: '#ffffff',
       fontFamily: 'Arial, sans-serif',
-      fontSize: '28px',
+      fontSize: '29px',
       fontStyle: 'bold',
-      letterSpacing: 1,
+      letterSpacing: 2,
     })
     .setOrigin(0.5)
-  return scene.add.container(GAME_WIDTH / 2, y, [mark, text])
+  const subtext = scene.add
+    .text(32, 21, 'BOOK FAIR', {
+      color: '#f7d67a',
+      fontFamily: 'Arial, sans-serif',
+      fontSize: '14px',
+      fontStyle: 'bold',
+      letterSpacing: 4,
+    })
+    .setOrigin(0.5)
+
+  return scene.add.container(GAME_WIDTH / 2, y, [mark, logo, text, subtext])
+}
+
+export function createLogoSeal(
+  scene: Phaser.Scene,
+  x: number,
+  y: number,
+  size: number,
+  alpha = 1,
+): Phaser.GameObjects.Container {
+  ensureLogoSealTexture(scene)
+
+  const frame = scene.add.graphics()
+  frame.fillStyle(0x35261e, 0.2).fillCircle(3, 4, size / 2 + 3)
+  frame.fillStyle(THEME.paper, 1).fillCircle(0, 0, size / 2 + 3)
+  frame.lineStyle(3, THEME.gold, 1).strokeCircle(0, 0, size / 2 + 1)
+
+  const emblem = scene.add
+    .image(0, 0, BOOK_EMBLEM_SEAL_TEXTURE_KEY)
+    .setDisplaySize(size - 7, size - 7)
+
+  return scene.add.container(x, y, [frame, emblem]).setAlpha(alpha)
+}
+
+function ensureLogoSealTexture(scene: Phaser.Scene): void {
+  if (
+    scene.textures.exists(BOOK_EMBLEM_SEAL_TEXTURE_KEY) ||
+    !scene.textures.exists(BOOK_EMBLEM_TEXTURE_KEY)
+  ) {
+    return
+  }
+
+  const sealSize = 256
+  const sealTexture = scene.textures.createCanvas(
+    BOOK_EMBLEM_SEAL_TEXTURE_KEY,
+    sealSize,
+    sealSize,
+  )
+  if (!sealTexture) {
+    return
+  }
+
+  const source = scene.textures
+    .get(BOOK_EMBLEM_TEXTURE_KEY)
+    .getSourceImage() as CanvasImageSource
+  const context = sealTexture.context
+  context.save()
+  context.beginPath()
+  context.arc(sealSize / 2, sealSize / 2, sealSize / 2, 0, Math.PI * 2)
+  context.clip()
+  context.drawImage(source, 0, 0, sealSize, sealSize)
+  context.restore()
+  sealTexture.refresh()
+}
+
+function drawFairBunting(graphic: Phaser.GameObjects.Graphics): void {
+  graphic.lineStyle(2, THEME.ink, 0.28)
+  graphic.lineBetween(170, 58, GAME_WIDTH - 170, 58)
+
+  const colors = [THEME.red, THEME.gold, THEME.ink, THEME.green]
+  for (let x = 188, index = 0; x < GAME_WIDTH - 175; x += 54, index += 1) {
+    graphic.fillStyle(colors[index % colors.length], 0.88)
+    graphic.fillTriangle(x, 58, x + 34, 58, x + 17, 78)
+  }
 }
 
 function drawShelf(

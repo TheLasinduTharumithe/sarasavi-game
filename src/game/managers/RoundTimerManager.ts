@@ -20,7 +20,7 @@ export class RoundTimerManager {
     this.scene = scene
 
     scene.add
-      .text(TIME_HUD_X, 24, 'TIME', {
+      .text(TIME_HUD_X, 30, 'TIME', {
         color: '#1f3a5f',
         fontFamily: 'Arial, sans-serif',
         fontSize: '24px',
@@ -30,7 +30,7 @@ export class RoundTimerManager {
       .setDepth(100)
 
     this.timeValueText = scene.add
-      .text(TIME_HUD_X, 54, this.formatTime(GAME_DURATION), {
+      .text(TIME_HUD_X, 58, this.formatTime(GAME_DURATION), {
         color: '#7b241c',
         fontFamily: 'Arial, sans-serif',
         fontSize: '36px',

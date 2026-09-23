@@ -4,6 +4,8 @@ export const GAME_WIDTH = 1280
 export const GAME_HEIGHT = 720
 export const GAME_DURATION = 30
 export const GAME_VERSION = '1.0.0'
+export const BOOK_EMBLEM_TEXTURE_KEY = 'sarasavi-book-emblem'
+export const BOOK_EMBLEM_SEAL_TEXTURE_KEY = 'sarasavi-book-emblem-seal'
 
 export const NORMAL_BOOK_SCORE = 10
 export const GOLDEN_BOOK_SCORE = 30

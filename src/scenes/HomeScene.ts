@@ -56,7 +56,7 @@ export class HomeScene extends Phaser.Scene {
     this.createNameInput(centerX)
 
     this.validationText = this.add
-      .text(centerX, 361, '', {
+      .text(centerX, 376, '', {
         color: '#b42318',
         fontFamily: 'Arial, sans-serif',
         fontSize: '19px',
@@ -64,17 +64,21 @@ export class HomeScene extends Phaser.Scene {
       })
       .setOrigin(0.5)
 
-    createTextButton(this, centerX, 420, 'PLAY', () => this.startGame())
-    createTextButton(this, centerX, 500, 'HOW TO PLAY', () => {
+    createTextButton(this, centerX, 430, 'PLAY', () => this.startGame())
+    createTextButton(this, centerX, 520, 'HOW TO PLAY', () => {
       this.startInformationalScene(SCENE_KEYS.HOW_TO_PLAY)
     })
-    createTextButton(this, centerX, 580, 'LEADERBOARD', () => {
+    createTextButton(this, centerX, 610, 'LEADERBOARD', () => {
       this.startInformationalScene(SCENE_KEYS.LEADERBOARD)
     })
 
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, this.handleShutdown, this)
     window.addEventListener('resize', this.scheduleNameInputPosition)
     window.addEventListener('orientationchange', this.scheduleNameInputPosition)
+    window.visualViewport?.addEventListener(
+      'resize',
+      this.scheduleNameInputPosition,
+    )
     this.scale.on(Phaser.Scale.Events.RESIZE, this.scheduleNameInputPosition)
     this.scheduleNameInputPosition()
   }
@@ -115,11 +119,13 @@ export class HomeScene extends Phaser.Scene {
 
     const canvasBounds = this.game.canvas.getBoundingClientRect()
     const scale = canvasBounds.width / GAME_WIDTH
+    const inputWidth = Math.min(380 * scale, canvasBounds.width - 32)
+    const inputHeight = Math.max(40, 56 * scale)
     this.nameInput.style.left = `${canvasBounds.left + logicalX * scale}px`
     this.nameInput.style.top = `${canvasBounds.top + logicalY * scale}px`
-    this.nameInput.style.width = `${380 * scale}px`
-    this.nameInput.style.height = `${56 * scale}px`
-    this.nameInput.style.fontSize = `${Math.max(14, 24 * scale)}px`
+    this.nameInput.style.width = `${inputWidth}px`
+    this.nameInput.style.height = `${inputHeight}px`
+    this.nameInput.style.fontSize = `${Math.max(16, 24 * scale)}px`
   }
 
   private readonly handleNameInput = (): void => {
@@ -164,6 +170,10 @@ export class HomeScene extends Phaser.Scene {
     this.nameInput?.removeEventListener('keydown', this.handleNameKeyDown)
     window.removeEventListener('resize', this.scheduleNameInputPosition)
     window.removeEventListener('orientationchange', this.scheduleNameInputPosition)
+    window.visualViewport?.removeEventListener(
+      'resize',
+      this.scheduleNameInputPosition,
+    )
     this.scale.off(Phaser.Scale.Events.RESIZE, this.scheduleNameInputPosition)
     if (this.positionFrame !== undefined) {
       window.cancelAnimationFrame(this.positionFrame)

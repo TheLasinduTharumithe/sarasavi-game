@@ -13,6 +13,7 @@ import { FallingItem } from '../game/objects/FallingItem'
 import { resolvePlayerName } from '../game/playerName'
 import {
   createBookFairBackground,
+  createLogoSeal,
   createPaperPanel,
 } from '../game/presentation'
 import { audioManager } from '../game/managers/AudioManager'
@@ -58,14 +59,17 @@ export class GameScene extends Phaser.Scene {
     createPaperPanel(this, 224, 66, 170, 94)
     createPaperPanel(this, GAME_WIDTH - 224, 66, 170, 94)
 
+    createLogoSeal(this, GAME_WIDTH / 2 - 205, 62, 48).setDepth(101)
+
     this.add
-      .text(GAME_WIDTH / 2, 62, 'CATCH THE BOOKS', {
+      .text(GAME_WIDTH / 2 + 28, 62, 'CATCH THE BOOKS', {
         color: '#1f3a5f',
         fontFamily: 'Arial, sans-serif',
-        fontSize: '40px',
+        fontSize: '38px',
         fontStyle: 'bold',
       })
       .setOrigin(0.5)
+      .setDepth(101)
 
     this.basket = new Basket(this)
     this.basket.setGameplayInputEnabled(false)

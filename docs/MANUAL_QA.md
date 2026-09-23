@@ -46,6 +46,8 @@ Record browser/device versions and attach screenshots or console output for fail
 
 - [ ] Test a representative narrow Android phone in portrait and landscape.
 - [ ] Canvas stays fully visible without cropped HUD or buttons.
+- [ ] Portrait mode shows the rotate-device overlay and pauses an active round.
+- [ ] Returning to landscape hides the overlay and resumes the same round.
 - [ ] Player-name keyboard does not permanently displace the layout.
 - [ ] Touch targets remain practical and do not overlap.
 

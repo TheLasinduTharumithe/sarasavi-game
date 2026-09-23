@@ -6,7 +6,10 @@ export default defineConfig({
     VitePWA({
       registerType: 'prompt',
       injectRegister: 'auto',
-      includeAssets: ['icons/app-icon.svg'],
+      includeAssets: [
+        'icons/app-icon.svg',
+        'images/sarasavi-book-emblem.png',
+      ],
       manifest: {
         name: 'Sarasavi Catch the Books',
         short_name: 'Catch Books',
