@@ -1,4 +1,5 @@
 import Phaser from 'phaser'
+import { GAME_WIDTH } from '../constants'
 import { prefersReducedMotion } from '../motion'
 
 interface BasketControlKeys {
@@ -59,7 +60,6 @@ export class Basket extends Phaser.GameObjects.Container {
     this.createTouchControls()
 
     scene.scale.on(Phaser.Scale.Events.RESIZE, this.handleResize, this)
-    scene.events.once(Phaser.Scenes.Events.SHUTDOWN, this.handleShutdown, this)
     this.clampToGameBounds()
   }
 
@@ -70,9 +70,10 @@ export class Basket extends Phaser.GameObjects.Container {
 
     const deltaSeconds = Math.min(delta, 50) / 1000
     const direction = this.getMovementDirection()
-    const targetVelocity = direction * MAX_MOVE_SPEED
+    const movementScale = this.scene.scale.gameSize.width / GAME_WIDTH
+    const targetVelocity = direction * MAX_MOVE_SPEED * movementScale
     const acceleration =
-      direction === 0 ? MOVE_DECELERATION : MOVE_ACCELERATION
+      (direction === 0 ? MOVE_DECELERATION : MOVE_ACCELERATION) * movementScale
 
     this.horizontalVelocity = moveTowards(
       this.horizontalVelocity,
@@ -432,8 +433,12 @@ export class Basket extends Phaser.GameObjects.Container {
     }
   }
 
-  private handleShutdown(): void {
+  protected preDestroy(): void {
+    // DisplayList shutdown destroys Game Objects before later Scene shutdown
+    // listeners run. Clean up while this.scene and its input plugins are still
+    // available, then let Container dispose its children and transform state.
     this.cleanupInput()
+    super.preDestroy()
   }
 
   private cleanupInput(): void {
@@ -445,13 +450,11 @@ export class Basket extends Phaser.GameObjects.Container {
     this.gameplayInputEnabled = false
     this.horizontalVelocity = 0
     this.touchDirection = 0
-    this.scene.tweens.killTweensOf(this.basketGraphic)
+
+    // Phaser owns scene tweens and clears them as part of scene shutdown.
+    // Do not access the TweenManager here: depending on shutdown listener order,
+    // its internal tween collection may already have been destroyed.
     this.scene.scale.off(Phaser.Scale.Events.RESIZE, this.handleResize, this)
-    this.scene.events.off(
-      Phaser.Scenes.Events.SHUTDOWN,
-      this.handleShutdown,
-      this,
-    )
     this.scene.input.setDraggable(this, false)
     this.off(Phaser.Input.Events.DRAG_START, this.handleDragStart, this)
     this.off(Phaser.Input.Events.DRAG, this.handleDrag, this)

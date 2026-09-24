@@ -1,5 +1,5 @@
 import Phaser from 'phaser'
-import { gameConfig } from './game/config'
+import { gameConfig, initialGameDimensions } from './game/config'
 import { initializeAnonymousAuth } from './firebase/auth'
 import { initializeScoreSync } from './firebase/scores'
 import { initializeAudioControls } from './game/managers/AudioManager'
@@ -13,6 +13,10 @@ initializeScoreSync()
 initializeNetworkStatus()
 initializeAudioControls()
 
+document.body.classList.toggle(
+  'game-portrait',
+  initialGameDimensions.portrait,
+)
 const game = new Phaser.Game(gameConfig)
 initializeResponsiveLayout(game)
 initializePwa(game)

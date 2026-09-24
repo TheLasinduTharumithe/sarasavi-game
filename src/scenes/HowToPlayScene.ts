@@ -1,5 +1,6 @@
 import Phaser from 'phaser'
-import { GAME_HEIGHT, GAME_WIDTH, SCENE_KEYS } from '../game/constants'
+import { SCENE_KEYS } from '../game/constants'
+import { getSceneDimensions } from '../game/layout'
 import { resolvePlayerName } from '../game/playerName'
 import {
   createBookFairBackground,
@@ -22,14 +23,21 @@ export class HowToPlayScene extends Phaser.Scene {
   }
 
   create(): void {
-    const centerX = GAME_WIDTH / 2
+    const { width, height, portrait } = getSceneDimensions(this)
+    const centerX = width / 2
     createBookFairBackground(this)
-    createPaperPanel(this, centerX, 378, 980, 600)
-    createBrandLabel(this, 68)
+    createPaperPanel(
+      this,
+      centerX,
+      portrait ? 650 : 378,
+      portrait ? 660 : 980,
+      portrait ? 1130 : 600,
+    )
+    createBrandLabel(this, portrait ? 130 : 68)
     FallingItem.createItemTextures(this)
 
     this.add
-      .text(centerX, 135, 'HOW TO PLAY', {
+      .text(centerX, portrait ? 225 : 135, 'HOW TO PLAY', {
         color: '#1f3a5f',
         fontFamily: 'Arial, sans-serif',
         fontSize: '52px',
@@ -44,10 +52,13 @@ export class HowToPlayScene extends Phaser.Scene {
       { key: 'coffee-item', label: 'COFFEE\n-5' },
     ] as const
     itemGuide.forEach((item, index) => {
-      const x = 340 + index * 200
-      this.add.image(x, 226, item.key).setScale(0.68)
+      const column = portrait ? index % 2 : index
+      const row = portrait ? Math.floor(index / 2) : 0
+      const x = portrait ? 210 + column * 300 : 340 + column * 200
+      const imageY = portrait ? 350 + row * 220 : 226
+      this.add.image(x, imageY, item.key).setScale(portrait ? 0.82 : 0.68)
       this.add
-        .text(x, 286, item.label, {
+        .text(x, imageY + (portrait ? 78 : 60), item.label, {
           align: 'center',
           color: '#314457',
           fontFamily: 'Arial, sans-serif',
@@ -60,7 +71,7 @@ export class HowToPlayScene extends Phaser.Scene {
     this.add
       .text(
         centerX,
-        358,
+        portrait ? 720 : 358,
         'Move the basket and catch as many books as possible before time runs out.',
         {
           align: 'center',
@@ -68,7 +79,7 @@ export class HowToPlayScene extends Phaser.Scene {
           fontFamily: 'Arial, sans-serif',
           fontSize: '24px',
           fontStyle: 'bold',
-          wordWrap: { width: 920 },
+          wordWrap: { width: portrait ? 600 : 920 },
         },
       )
       .setOrigin(0.5)
@@ -76,7 +87,7 @@ export class HowToPlayScene extends Phaser.Scene {
     this.add
       .text(
         centerX,
-        480,
+        portrait ? 885 : 480,
         'Keyboard:\nArrow Keys or A / D\n\nTouch:\nDrag the basket or hold the LEFT / RIGHT buttons',
         {
           align: 'center',
@@ -87,11 +98,12 @@ export class HowToPlayScene extends Phaser.Scene {
         },
       )
       .setOrigin(0.5)
+      .setWordWrapWidth(portrait ? 610 : 920)
 
     createTextButton(
       this,
-      centerX - 190,
-      GAME_HEIGHT - 62,
+      portrait ? 190 : centerX - 190,
+      portrait ? height - 105 : height - 62,
       'START GAME',
       () => {
         if (this.playerName) {
@@ -100,16 +112,16 @@ export class HowToPlayScene extends Phaser.Scene {
           this.scene.start(SCENE_KEYS.HOME)
         }
       },
-      { width: 330, height: 64, radius: 14 },
+      { width: portrait ? 290 : 330, height: 80, radius: 14 },
     )
 
     createTextButton(
       this,
-      centerX + 190,
-      GAME_HEIGHT - 62,
+      portrait ? width - 190 : centerX + 190,
+      portrait ? height - 105 : height - 62,
       'BACK',
       () => this.scene.start(SCENE_KEYS.HOME),
-      { width: 330, height: 64, radius: 14 },
+      { width: portrait ? 290 : 330, height: 80, radius: 14 },
     )
   }
 }

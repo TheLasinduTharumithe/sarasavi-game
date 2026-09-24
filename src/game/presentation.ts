@@ -2,9 +2,8 @@ import Phaser from 'phaser'
 import {
   BOOK_EMBLEM_SEAL_TEXTURE_KEY,
   BOOK_EMBLEM_TEXTURE_KEY,
-  GAME_HEIGHT,
-  GAME_WIDTH,
 } from './constants'
+import { getSceneDimensions } from './layout'
 
 export const THEME = {
   ink: 0x213a57,
@@ -29,30 +28,33 @@ export function createBookFairBackground(
   scene: Phaser.Scene,
   options: BackgroundOptions = {},
 ): Phaser.GameObjects.Graphics {
+  const { width, height, portrait } = getSceneDimensions(scene)
   const graphic = scene.add.graphics().setDepth(-100)
-  graphic.fillStyle(THEME.cream, 1).fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT)
+  graphic.fillStyle(THEME.cream, 1).fillRect(0, 0, width, height)
 
   // A restrained book-fair awning gives every scene a recognizable setting.
-  graphic.fillStyle(THEME.ink, 1).fillRect(0, 0, GAME_WIDTH, 16)
-  for (let x = 0; x < GAME_WIDTH; x += 80) {
+  graphic.fillStyle(THEME.ink, 1).fillRect(0, 0, width, 16)
+  for (let x = 0; x < width; x += 80) {
     graphic.fillStyle((x / 80) % 2 === 0 ? THEME.red : 0xf1d6b5, 1)
     graphic.fillRect(x, 16, 80, 28)
   }
-  graphic.fillStyle(THEME.woodDark, 0.16).fillRect(0, 44, GAME_WIDTH, 4)
+  graphic.fillStyle(THEME.woodDark, 0.16).fillRect(0, 44, width, 4)
 
   if (!options.gameplay) {
-    drawFairBunting(graphic)
+    drawFairBunting(graphic, width)
   }
 
   const shelfAlpha = options.gameplay ? 0.13 : 0.2
-  drawShelf(graphic, 20, 180, shelfAlpha)
-  drawShelf(graphic, GAME_WIDTH - 150, 180, shelfAlpha)
+  const shelfY = portrait ? 260 : 180
+  drawShelf(graphic, 20, shelfY, shelfAlpha)
+  drawShelf(graphic, width - 150, shelfY, shelfAlpha)
 
+  const floorHeight = portrait ? 100 : 84
   graphic.fillStyle(0xd8bd91, options.gameplay ? 0.32 : 0.48)
-  graphic.fillRect(0, GAME_HEIGHT - 84, GAME_WIDTH, 84)
+  graphic.fillRect(0, height - floorHeight, width, floorHeight)
   graphic.lineStyle(2, THEME.wood, options.gameplay ? 0.12 : 0.2)
-  for (let y = GAME_HEIGHT - 66; y < GAME_HEIGHT; y += 22) {
-    graphic.lineBetween(0, y, GAME_WIDTH, y)
+  for (let y = height - floorHeight + 18; y < height; y += 22) {
+    graphic.lineBetween(0, y, width, y)
   }
 
   return graphic
@@ -138,7 +140,12 @@ export function createBrandLabel(
     })
     .setOrigin(0.5)
 
-  return scene.add.container(GAME_WIDTH / 2, y, [mark, logo, text, subtext])
+  return scene.add.container(scene.scale.gameSize.width / 2, y, [
+    mark,
+    logo,
+    text,
+    subtext,
+  ])
 }
 
 export function createLogoSeal(
@@ -193,12 +200,16 @@ function ensureLogoSealTexture(scene: Phaser.Scene): void {
   sealTexture.refresh()
 }
 
-function drawFairBunting(graphic: Phaser.GameObjects.Graphics): void {
+function drawFairBunting(
+  graphic: Phaser.GameObjects.Graphics,
+  width: number,
+): void {
+  const edge = width < 900 ? 40 : 170
   graphic.lineStyle(2, THEME.ink, 0.28)
-  graphic.lineBetween(170, 58, GAME_WIDTH - 170, 58)
+  graphic.lineBetween(edge, 58, width - edge, 58)
 
   const colors = [THEME.red, THEME.gold, THEME.ink, THEME.green]
-  for (let x = 188, index = 0; x < GAME_WIDTH - 175; x += 54, index += 1) {
+  for (let x = edge + 18, index = 0; x < width - edge; x += 54, index += 1) {
     graphic.fillStyle(colors[index % colors.length], 0.88)
     graphic.fillTriangle(x, 58, x + 34, 58, x + 17, 78)
   }

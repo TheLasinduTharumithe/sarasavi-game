@@ -53,6 +53,12 @@ canvas {
   user-select: none;
 }
 
+body.game-portrait canvas {
+  width: min(100vw, calc(100dvh * 9 / 16)) !important;
+  height: min(100dvh, calc(100vw * 16 / 9)) !important;
+  aspect-ratio: 9 / 16;
+}
+
 .player-name-input {
   position: fixed;
   z-index: 15;
@@ -126,52 +132,6 @@ canvas {
   background: rgb(92 102 112 / 88%);
 }
 
-.orientation-hint {
-  display: none;
-}
-
-.orientation-hint:not([hidden]) {
-  position: fixed;
-  inset: 0;
-  z-index: 100;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  align-items: center;
-  justify-content: center;
-  padding:
-    max(28px, env(safe-area-inset-top))
-    max(28px, env(safe-area-inset-right))
-    max(28px, env(safe-area-inset-bottom))
-    max(28px, env(safe-area-inset-left));
-  color: #f8f1df;
-  background: #17202a;
-  text-align: center;
-}
-
-.orientation-hint__icon {
-  display: grid;
-  width: 72px;
-  height: 72px;
-  place-items: center;
-  border: 3px solid #f2c45a;
-  border-radius: 18px;
-  color: #f2c45a;
-  font-size: 48px;
-  line-height: 1;
-}
-
-.orientation-hint strong {
-  font-size: clamp(24px, 7vw, 34px);
-}
-
-.orientation-hint span:last-child {
-  max-width: 420px;
-  color: #e9dfca;
-  font-size: clamp(16px, 4.5vw, 20px);
-  line-height: 1.45;
-}
-
 .pwa-update-prompt {
   position: fixed;
   left: 50%;
@@ -188,6 +148,42 @@ canvas {
   font-size: 14px;
   font-weight: 700;
   transform: translateX(-50%);
+}
+
+@media (max-width: 700px) and (orientation: portrait) {
+  .audio-toggle {
+    top: max(6px, env(safe-area-inset-top));
+    left: calc(50% - 52px);
+    width: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0;
+    border-width: 2px;
+    font-size: 0;
+  }
+
+  .audio-toggle::after {
+    content: '\1F50A';
+    font-size: 20px;
+  }
+
+  .audio-toggle--muted::after {
+    content: '\1F507';
+  }
+
+  .network-status {
+    top: max(18px, env(safe-area-inset-top));
+    right: auto;
+    left: calc(50% + 8px);
+    padding: 4px 7px;
+    font-size: 10px;
+  }
+
+  .pwa-update-prompt {
+    width: calc(100vw - 24px);
+    max-width: 420px;
+    justify-content: center;
+  }
 }
 
 .pwa-update-prompt[hidden] {
@@ -221,12 +217,12 @@ canvas {
   }
 
   .audio-toggle::after {
-    content: '🔊';
+    content: '\1F50A';
     font-size: 20px;
   }
 
   .audio-toggle--muted::after {
-    content: '🔇';
+    content: '\1F507';
   }
 
   .network-status {

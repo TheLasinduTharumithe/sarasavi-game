@@ -1,10 +1,9 @@
 import Phaser from 'phaser'
 import {
   GAME_DURATION,
-  GAME_HEIGHT,
-  GAME_WIDTH,
   SCENE_KEYS,
 } from '../game/constants'
+import { getSceneDimensions } from '../game/layout'
 import { saveScore } from '../firebase/scores'
 import { getAchievementTitle } from '../game/logic/achievement'
 import { createEmptyGameStats } from '../game/logic/score'
@@ -39,49 +38,88 @@ export class ResultScene extends Phaser.Scene {
   }
 
   create(): void {
-    const centerX = GAME_WIDTH / 2
+    const { width, height, portrait } = getSceneDimensions(this)
+    const centerX = width / 2
     const achievement = getAchievementTitle(this.stats.score)
     createBookFairBackground(this)
-    createPaperPanel(this, centerX, 378, 1100, 600)
-    createBrandLabel(this, 65)
+    createPaperPanel(
+      this,
+      centerX,
+      portrait ? 650 : 378,
+      portrait ? 660 : 1100,
+      portrait ? 1130 : 600,
+    )
+    createBrandLabel(this, portrait ? 130 : 65)
 
     this.add
-      .text(centerX, 132, `GREAT JOB, ${this.playerName}!`, {
+      .text(
+        centerX,
+        portrait ? 225 : 132,
+        `GREAT JOB, ${this.playerName}!`,
+        {
         color: '#7b241c',
         fontFamily: 'Arial, sans-serif',
-        fontSize: '46px',
+        fontSize: portrait ? '42px' : '46px',
         fontStyle: 'bold',
-      })
+          align: 'center',
+          wordWrap: { width: portrait ? 600 : 1000 },
+        },
+      )
       .setOrigin(0.5)
 
     this.saveStatusText = this.add
-      .text(centerX, 515, 'Saving score...', {
+      .text(centerX, portrait ? 820 : 515, 'Saving score...', {
         color: '#1f3a5f',
         fontFamily: 'Arial, sans-serif',
-        fontSize: '22px',
+        fontSize: portrait ? '20px' : '22px',
         fontStyle: 'bold',
+        align: 'center',
+        wordWrap: { width: portrait ? 590 : 900 },
       })
       .setOrigin(0.5)
 
     void this.submitScore()
 
-    this.addResultValue(centerX, 184, 'FINAL SCORE', this.stats.score, 54)
-    this.addResultValue(300, 315, 'BOOKS CAUGHT', this.stats.booksCaught)
     this.addResultValue(
       centerX,
-      315,
-      'GOLDEN BOOKS',
-      this.stats.goldenBooksCaught,
-    )
-    this.addResultValue(
-      GAME_WIDTH - 300,
-      315,
-      'DISTRACTIONS CAUGHT',
-      this.stats.totalDistractionsCaught,
+      portrait ? 305 : 184,
+      'FINAL SCORE',
+      this.stats.score,
+      54,
     )
 
+    if (portrait) {
+      this.addResultValue(190, 455, 'BOOKS CAUGHT', this.stats.booksCaught)
+      this.addResultValue(
+        width - 190,
+        455,
+        'GOLDEN BOOKS',
+        this.stats.goldenBooksCaught,
+      )
+      this.addResultValue(
+        centerX,
+        585,
+        'DISTRACTIONS CAUGHT',
+        this.stats.totalDistractionsCaught,
+      )
+    } else {
+      this.addResultValue(300, 315, 'BOOKS CAUGHT', this.stats.booksCaught)
+      this.addResultValue(
+        centerX,
+        315,
+        'GOLDEN BOOKS',
+        this.stats.goldenBooksCaught,
+      )
+      this.addResultValue(
+        width - 300,
+        315,
+        'DISTRACTIONS CAUGHT',
+        this.stats.totalDistractionsCaught,
+      )
+    }
+
     this.add
-      .text(centerX, 422, 'ACHIEVEMENT', {
+      .text(centerX, portrait ? 705 : 422, 'ACHIEVEMENT', {
         color: '#1f3a5f',
         fontFamily: 'Arial, sans-serif',
         fontSize: '23px',
@@ -90,7 +128,7 @@ export class ResultScene extends Phaser.Scene {
       .setOrigin(0.5)
 
     this.add
-      .text(centerX, 467, achievement, {
+      .text(centerX, portrait ? 755 : 467, achievement, {
         color: '#b77900',
         fontFamily: 'Arial, sans-serif',
         fontSize: '38px',
@@ -100,35 +138,35 @@ export class ResultScene extends Phaser.Scene {
 
     createTextButton(
       this,
-      240,
-      GAME_HEIGHT - 95,
+      portrait ? centerX : 240,
+      portrait ? 945 : height - 95,
       'PLAY AGAIN',
       () => {
         this.scene.start(SCENE_KEYS.GAME, { playerName: this.playerName })
       },
-      { width: 300, height: 64, radius: 14 },
+      { width: portrait ? 500 : 300, height: 80, radius: 14 },
     )
 
     createTextButton(
       this,
       centerX,
-      GAME_HEIGHT - 95,
+      portrait ? 1055 : height - 95,
       'VIEW LEADERBOARD',
       () => {
         this.scene.start(SCENE_KEYS.LEADERBOARD, {
           playerName: this.playerName,
         })
       },
-      { width: 360, height: 64, radius: 14 },
+      { width: portrait ? 500 : 360, height: 80, radius: 14 },
     )
 
     createTextButton(
       this,
-      GAME_WIDTH - 240,
-      GAME_HEIGHT - 95,
+      portrait ? centerX : width - 240,
+      portrait ? 1165 : height - 95,
       'HOME',
       () => this.scene.start(SCENE_KEYS.HOME),
-      { width: 300, height: 64, radius: 14 },
+      { width: portrait ? 500 : 300, height: 80, radius: 14 },
     )
   }
 

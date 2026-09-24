@@ -1,5 +1,6 @@
 import Phaser from 'phaser'
-import { GAME_HEIGHT, GAME_WIDTH, SCENE_KEYS } from '../game/constants'
+import { SCENE_KEYS } from '../game/constants'
+import { getSceneDimensions } from '../game/layout'
 import {
   loadTodaysLeaderboard,
   type LeaderboardEntry,
@@ -13,11 +14,6 @@ import {
 import type { PlayerNameSceneData } from '../game/types'
 import { createTextButton } from '../game/ui'
 
-const TABLE_LEFT = 190
-const TABLE_RIGHT = GAME_WIDTH - 190
-const ROW_START_Y = 205
-const ROW_SPACING = 38
-
 const PODIUM_STYLES = [
   { background: 0xfff4cc, rank: '#9a6b00' },
   { background: 0xe8eef5, rank: '#536475' },
@@ -28,6 +24,14 @@ export class LeaderboardScene extends Phaser.Scene {
   private playerName = ''
   private requestId = 0
   private stateObjects: Phaser.GameObjects.GameObject[] = []
+  private centerX = 0
+  private tableLeft = 190
+  private tableRight = 1090
+  private tableHeaderY = 162
+  private rowStartY = 205
+  private rowSpacing = 38
+  private rowHeight = 33
+  private portrait = false
 
   constructor() {
     super(SCENE_KEYS.LEADERBOARD)
@@ -40,24 +44,42 @@ export class LeaderboardScene extends Phaser.Scene {
   }
 
   create(): void {
-    const centerX = GAME_WIDTH / 2
+    const { width, height, portrait } = getSceneDimensions(this)
+    const centerX = width / 2
+    this.centerX = centerX
+    this.portrait = portrait
+    this.tableLeft = portrait ? 60 : 190
+    this.tableRight = portrait ? width - 60 : width - 190
+    this.tableHeaderY = portrait ? 285 : 162
+    this.rowStartY = portrait ? 345 : 205
+    this.rowSpacing = portrait ? 68 : 38
+    this.rowHeight = portrait ? 56 : 33
+
     createBookFairBackground(this)
-    createPaperPanel(this, centerX, 382, 980, 600)
-    createBrandLabel(this, 65)
+    createPaperPanel(
+      this,
+      centerX,
+      portrait ? 650 : 382,
+      portrait ? 660 : 980,
+      portrait ? 1130 : 600,
+    )
+    createBrandLabel(this, portrait ? 130 : 65)
 
     this.add
-      .text(centerX, 130, "TODAY'S TOP PLAYERS", {
+      .text(centerX, portrait ? 225 : 130, "TODAY'S TOP PLAYERS", {
         color: '#1f3a5f',
         fontFamily: 'Arial, sans-serif',
-        fontSize: '50px',
+        fontSize: portrait ? '42px' : '50px',
         fontStyle: 'bold',
+        align: 'center',
+        wordWrap: { width: portrait ? 620 : 1000 },
       })
       .setOrigin(0.5)
 
     createTextButton(
       this,
-      centerX - 185,
-      GAME_HEIGHT - 58,
+      portrait ? 190 : centerX - 185,
+      portrait ? height - 105 : height - 58,
       'PLAY',
       () => {
         if (this.playerName) {
@@ -66,16 +88,16 @@ export class LeaderboardScene extends Phaser.Scene {
           this.scene.start(SCENE_KEYS.HOME)
         }
       },
-      { width: 320, height: 60, radius: 14 },
+      { width: portrait ? 290 : 320, height: 80, radius: 14 },
     )
 
     createTextButton(
       this,
-      centerX + 185,
-      GAME_HEIGHT - 58,
+      portrait ? width - 190 : centerX + 185,
+      portrait ? height - 105 : height - 58,
       'HOME',
       () => this.scene.start(SCENE_KEYS.HOME),
-      { width: 320, height: 60, radius: 14 },
+      { width: portrait ? 290 : 320, height: 80, radius: 14 },
     )
 
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, this.handleShutdown, this)
@@ -117,19 +139,24 @@ export class LeaderboardScene extends Phaser.Scene {
 
   private showLeaderboard(entries: LeaderboardEntry[]): void {
     this.clearStateObjects()
-    this.addStateText(TABLE_LEFT + 20, 162, 'RANK', {
+    this.addStateText(this.tableLeft + 20, this.tableHeaderY, 'RANK', {
       originX: 0,
       color: '#1f3a5f',
       fontSize: '20px',
       fontStyle: 'bold',
     })
-    this.addStateText(350, 162, 'PLAYER', {
+    this.addStateText(
+      this.portrait ? this.tableLeft + 125 : 350,
+      this.tableHeaderY,
+      'PLAYER',
+      {
       originX: 0,
       color: '#1f3a5f',
       fontSize: '20px',
       fontStyle: 'bold',
-    })
-    this.addStateText(TABLE_RIGHT - 20, 162, 'SCORE', {
+      },
+    )
+    this.addStateText(this.tableRight - 20, this.tableHeaderY, 'SCORE', {
       originX: 1,
       color: '#1f3a5f',
       fontSize: '20px',
@@ -142,33 +169,33 @@ export class LeaderboardScene extends Phaser.Scene {
   }
 
   private addLeaderboardRow(index: number, entry: LeaderboardEntry): void {
-    const y = ROW_START_Y + index * ROW_SPACING
+    const y = this.rowStartY + index * this.rowSpacing
     const podiumStyle = PODIUM_STYLES[index]
     const background = this.add
       .rectangle(
-        GAME_WIDTH / 2,
+        this.centerX,
         y,
-        TABLE_RIGHT - TABLE_LEFT,
-        33,
+        this.tableRight - this.tableLeft,
+        this.rowHeight,
         podiumStyle?.background ?? 0xffffff,
         podiumStyle ? 1 : 0.68,
       )
       .setStrokeStyle(1, podiumStyle?.background ?? 0xd8dee5)
 
     this.stateObjects.push(background)
-    this.addStateText(TABLE_LEFT + 40, y, String(index + 1), {
+    this.addStateText(this.tableLeft + 40, y, String(index + 1), {
       originX: 0.5,
       color: podiumStyle?.rank ?? '#3d3d3d',
       fontSize: '23px',
       fontStyle: index < 3 ? 'bold' : 'normal',
     })
-    this.addStateText(350, y, entry.playerName, {
+    this.addStateText(this.portrait ? this.tableLeft + 125 : 350, y, entry.playerName, {
       originX: 0,
       color: '#263645',
       fontSize: '23px',
       fontStyle: index < 3 ? 'bold' : 'normal',
     })
-    this.addStateText(TABLE_RIGHT - 28, y, String(entry.score), {
+    this.addStateText(this.tableRight - 28, y, String(entry.score), {
       originX: 1,
       color: '#7b241c',
       fontSize: '23px',
@@ -178,7 +205,7 @@ export class LeaderboardScene extends Phaser.Scene {
 
   private showStatus(message: string): void {
     this.clearStateObjects()
-    this.addStateText(GAME_WIDTH / 2, 330, message, {
+    this.addStateText(this.centerX, this.portrait ? 540 : 330, message, {
       originX: 0.5,
       color: '#3d3d3d',
       fontSize: '28px',
@@ -191,11 +218,11 @@ export class LeaderboardScene extends Phaser.Scene {
 
     const retryButton = createTextButton(
       this,
-      GAME_WIDTH / 2,
-      430,
+      this.centerX,
+      this.portrait ? 690 : 430,
       'RETRY',
       () => void this.loadLeaderboard(),
-      { width: 280, height: 60, radius: 14 },
+      { width: this.portrait ? 440 : 280, height: 80, radius: 14 },
     )
     this.stateObjects.push(retryButton)
   }

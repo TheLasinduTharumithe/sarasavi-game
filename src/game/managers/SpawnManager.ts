@@ -1,6 +1,7 @@
 import Phaser from 'phaser'
 import {
   DIFFICULTY_CONFIG,
+  GAME_HEIGHT,
   ITEM_SPAWN_PROBABILITIES,
   MAX_ACTIVE_ITEMS,
 } from '../constants'
@@ -80,7 +81,11 @@ export class SpawnManager {
 
     this.isDestroyed = true
     this.scene.events.off(Phaser.Scenes.Events.SHUTDOWN, this.destroy, this)
-    this.stop(true)
+
+    // Scene shutdown owns destruction of the Arcade Physics group and its
+    // children. At this point Phaser may already have cleared Group.children,
+    // so only cancel our scheduling state here.
+    this.stop(false)
   }
 
   private scheduleNextSpawn(): void {
@@ -122,11 +127,12 @@ export class SpawnManager {
     const speedRange = this.interpolateDifficultyRange(
       DIFFICULTY_CONFIG.fallingSpeed,
     )
+    const verticalScale = this.scene.scale.gameSize.height / GAME_HEIGHT
 
     const x = Phaser.Math.Between(minimumX, Math.max(minimumX, maximumX))
     const fallSpeed = Phaser.Math.Between(
-      Math.round(speedRange.min),
-      Math.round(speedRange.max),
+      Math.round(speedRange.min * verticalScale),
+      Math.round(speedRange.max * verticalScale),
     )
     const itemType = this.chooseItemType()
     const item = new FallingItem(this.scene, x, fallSpeed, itemType)

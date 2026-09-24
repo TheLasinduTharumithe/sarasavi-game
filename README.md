@@ -139,7 +139,7 @@ The daily top-ten query uses the composite index in [firestore.indexes.json](./f
 firebase deploy --only firestore:indexes
 ```
 
-Index creation can take several minutes. Until it is ready, the leaderboard shows its temporary-unavailable state while gameplay continues normally.
+Index creation can take several minutes. Until it is ready, the leaderboard uses a today-only date-index fallback so gameplay and leaderboard navigation continue normally. Reload the app after the composite index reaches `Enabled` to use the optimized top-ten query.
 
 ## PWA and offline behavior
 
@@ -182,10 +182,10 @@ Add the deployed domain to **Authentication → Settings → Authorized domains*
 
 ## Accessibility and responsive behavior
 
-- Logical canvas: 1280×720 using Phaser `FIT` and `CENTER_BOTH`
-- Landscape-first layout for Android tablets, laptops, and desktops
-- Smartphone landscape view uses proportional scaling and enlarged touch controls
-- Portrait phones show a rotate-device overlay and pause an active round until landscape returns
+- Adaptive logical canvas: 1280×720 in landscape and 720×1280 in portrait, using Phaser `FIT` and `CENTER_BOTH`
+- Native portrait layout for phones; players are never asked to rotate the device
+- Landscape layout remains optimized for Android tablets, laptops, and desktops
+- HUD, menus, gameplay objects, and touch controls reflow for the active orientation
 - Safe-area insets protect controls on notched mobile devices
 - Large controls, high-contrast text, keyboard movement, and touch dragging
 - Items use distinct silhouettes and marks, not color alone
@@ -197,7 +197,7 @@ Add the deployed domain to **Authentication → Settings → Authorized domains*
 - Client-side games cannot be fully cheat-proof; Firestore rules validate shape and reasonable limits, not human play.
 - Anonymous identities are browser/profile-specific and may be lost when site data is cleared.
 - Pending scores use local storage and are limited to the ten most recent unsent rounds.
-- The game is landscape-first; portrait phones must rotate before continuing.
+- Changing orientation after the game has loaded keeps the current logical layout until the page is refreshed.
 - Audio is intentionally lightweight procedural Web Audio rather than recorded music.
 - Analytics is not enabled.
 

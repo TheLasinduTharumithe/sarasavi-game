@@ -2,6 +2,8 @@ import type { FallingItemType } from './types'
 
 export const GAME_WIDTH = 1280
 export const GAME_HEIGHT = 720
+export const PORTRAIT_GAME_WIDTH = 720
+export const PORTRAIT_GAME_HEIGHT = 1280
 export const GAME_DURATION = 30
 export const GAME_VERSION = '1.0.0'
 export const BOOK_EMBLEM_TEXTURE_KEY = 'sarasavi-book-emblem'

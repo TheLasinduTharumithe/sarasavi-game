@@ -35,10 +35,10 @@ Record browser/device versions and attach screenshots or console output for fail
 
 ## Tablet touch and orientation
 
-- [ ] Test an Android tablet in landscape using Chrome.
+- [ ] Test an Android tablet in both portrait and landscape using Chrome.
 - [ ] Dragging starts only from the basket and remains horizontal.
 - [ ] Fast drags remain inside the left/right boundaries.
-- [ ] Rotate landscape → portrait → landscape on Home and during a round.
+- [ ] Load once in portrait and once in landscape; no rotate-device prompt is shown.
 - [ ] HUD, basket, controls, and DOM name field remain visible.
 - [ ] Browser zoom and address-bar resizing do not introduce page scrolling.
 
@@ -46,8 +46,8 @@ Record browser/device versions and attach screenshots or console output for fail
 
 - [ ] Test a representative narrow Android phone in portrait and landscape.
 - [ ] Canvas stays fully visible without cropped HUD or buttons.
-- [ ] Portrait mode shows the rotate-device overlay and pauses an active round.
-- [ ] Returning to landscape hides the overlay and resumes the same round.
+- [ ] Portrait mode uses the full native 9:16 game layout without asking the player to rotate.
+- [ ] Score, timer, basket, falling items, and LEFT/RIGHT controls remain visible in portrait.
 - [ ] Player-name keyboard does not permanently displace the layout.
 - [ ] Touch targets remain practical and do not overlap.
 

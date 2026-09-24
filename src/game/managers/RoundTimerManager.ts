@@ -1,11 +1,10 @@
 import Phaser from 'phaser'
-import { GAME_DURATION, GAME_HEIGHT, GAME_WIDTH } from '../constants'
+import { GAME_DURATION } from '../constants'
+import { getSceneDimensions } from '../layout'
 import { prefersReducedMotion } from '../motion'
 import { audioManager } from './AudioManager'
 
 const COUNTDOWN_VALUES = ['3', '2', '1'] as const
-const TIME_HUD_X = GAME_WIDTH - 170
-
 export class RoundTimerManager {
   private readonly scene: Phaser.Scene
   private readonly timeValueText: Phaser.GameObjects.Text
@@ -18,9 +17,13 @@ export class RoundTimerManager {
 
   constructor(scene: Phaser.Scene) {
     this.scene = scene
+    const { width, portrait } = getSceneDimensions(scene)
+    const hudX = portrait ? width - 60 : width - 170
+    const labelY = portrait ? 58 : 30
+    const valueY = portrait ? 88 : 58
 
     scene.add
-      .text(TIME_HUD_X, 30, 'TIME', {
+      .text(hudX, labelY, 'TIME', {
         color: '#1f3a5f',
         fontFamily: 'Arial, sans-serif',
         fontSize: '24px',
@@ -30,7 +33,7 @@ export class RoundTimerManager {
       .setDepth(100)
 
     this.timeValueText = scene.add
-      .text(TIME_HUD_X, 58, this.formatTime(GAME_DURATION), {
+      .text(hudX, valueY, this.formatTime(GAME_DURATION), {
         color: '#7b241c',
         fontFamily: 'Arial, sans-serif',
         fontSize: '36px',
@@ -120,7 +123,14 @@ export class RoundTimerManager {
 
     this.isDestroyed = true
     this.scene.events.off(Phaser.Scenes.Events.SHUTDOWN, this.destroy, this)
-    this.stop()
+
+    // Phaser disposes Scene timers, tweens, and display objects during
+    // shutdown. Clear our references without touching plugins that may have
+    // already completed their own shutdown handlers.
+    this.countdownEvent = undefined
+    this.roundEvent = undefined
+    this.countdownText = undefined
+    this.finalCountdownText = undefined
   }
 
   private startRoundTimer(onComplete: () => void): void {
@@ -155,7 +165,8 @@ export class RoundTimerManager {
   private showFinalCountdown(value: number): void {
     this.clearFinalCountdown()
     this.finalCountdownText = this.createCenteredText(String(value), 74)
-    this.finalCountdownText.setY(190)
+    const { portrait } = getSceneDimensions(this.scene)
+    this.finalCountdownText.setY(portrait ? 330 : 190)
     this.pulseText(this.finalCountdownText)
   }
 
@@ -173,8 +184,9 @@ export class RoundTimerManager {
     value: string,
     fontSize: number,
   ): Phaser.GameObjects.Text {
+    const { width, height } = getSceneDimensions(this.scene)
     return this.scene.add
-      .text(GAME_WIDTH / 2, GAME_HEIGHT / 2, value, {
+      .text(width / 2, height / 2, value, {
         color: '#c0392b',
         fontFamily: 'Arial, sans-serif',
         fontSize: `${fontSize}px`,

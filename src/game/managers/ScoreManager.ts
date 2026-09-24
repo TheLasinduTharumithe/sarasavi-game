@@ -6,6 +6,7 @@ import {
   PHONE_PENALTY,
 } from '../constants'
 import { applyItemCatch, createEmptyGameStats } from '../logic/score'
+import { getSceneDimensions } from '../layout'
 import { audioManager } from './AudioManager'
 import type { FallingItemType, GameStats } from '../types'
 
@@ -13,8 +14,6 @@ interface FeedbackStyle {
   message: string
   color: string
 }
-
-const SCORE_HUD_X = 170
 
 export class ScoreManager {
   private readonly scene: Phaser.Scene
@@ -25,9 +24,13 @@ export class ScoreManager {
 
   constructor(scene: Phaser.Scene) {
     this.scene = scene
+    const { portrait } = getSceneDimensions(scene)
+    const hudX = portrait ? 60 : 170
+    const labelY = portrait ? 58 : 30
+    const valueY = portrait ? 88 : 58
 
     scene.add
-      .text(SCORE_HUD_X, 30, 'SCORE', {
+      .text(hudX, labelY, 'SCORE', {
         color: '#1f3a5f',
         fontFamily: 'Arial, sans-serif',
         fontSize: '24px',
@@ -36,7 +39,7 @@ export class ScoreManager {
       .setDepth(100)
 
     this.scoreValueText = scene.add
-      .text(SCORE_HUD_X, 58, '000', {
+      .text(hudX, valueY, '000', {
         color: '#7b241c',
         fontFamily: 'Arial, sans-serif',
         fontSize: '36px',

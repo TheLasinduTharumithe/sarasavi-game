@@ -24,6 +24,7 @@ export type LeaderboardLoadResult =
   | { status: 'unavailable'; entries: [] }
 
 const LEADERBOARD_LIMIT = 10
+let useDateIndexFallback = false
 
 export async function loadTodaysLeaderboard(): Promise<LeaderboardLoadResult> {
   const app = getFirebaseApp()
@@ -37,6 +38,10 @@ export async function loadTodaysLeaderboard(): Promise<LeaderboardLoadResult> {
   }
 
   const { startOfToday, startOfTomorrow } = getLocalDayRange()
+
+  if (useDateIndexFallback) {
+    return loadTodaysLeaderboardFallback(startOfToday, startOfTomorrow)
+  }
 
   try {
     const database = getFirestore(app)
@@ -75,9 +80,11 @@ export async function loadTodaysLeaderboard(): Promise<LeaderboardLoadResult> {
     const errorCode = getFirebaseErrorCode(error)
 
     if (errorCode === 'failed-precondition') {
-      console.info(
-        '[Firebase] The leaderboard composite index is not ready. Using the date-index fallback.',
-      )
+      // A newly deployed Firestore composite index may take several minutes
+      // to become ready. Use the indexed date query for the rest of this page
+      // session instead of repeating a known-to-fail request every time the
+      // player opens or retries the leaderboard.
+      useDateIndexFallback = true
       return loadTodaysLeaderboardFallback(startOfToday, startOfTomorrow)
     }
 

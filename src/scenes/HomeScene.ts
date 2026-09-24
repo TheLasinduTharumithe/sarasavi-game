@@ -1,5 +1,6 @@
 import Phaser from 'phaser'
-import { GAME_WIDTH, SCENE_KEYS } from '../game/constants'
+import { SCENE_KEYS } from '../game/constants'
+import { getSceneDimensions } from '../game/layout'
 import {
   loadStoredPlayerName,
   storePlayerName,
@@ -16,36 +17,62 @@ export class HomeScene extends Phaser.Scene {
   private nameInput?: HTMLInputElement
   private validationText?: Phaser.GameObjects.Text
   private positionFrame?: number
+  private inputLogicalX = 0
+  private inputLogicalY = 0
+  private inputLogicalWidth = 380
+  private inputLogicalHeight = 56
 
   constructor() {
     super(SCENE_KEYS.HOME)
   }
 
   create(): void {
-    const centerX = GAME_WIDTH / 2
+    const { width, portrait } = getSceneDimensions(this)
+    const centerX = width / 2
+    const panelY = portrait ? 650 : 390
+    const panelWidth = portrait ? 660 : 650
+    const panelHeight = portrait ? 1130 : 580
+    const brandY = portrait ? 130 : 78
+    const titleY = portrait ? 230 : 153
+    const subtitleY = portrait ? 292 : 207
+    const playerLabelY = portrait ? 365 : 267
+    const inputY = portrait ? 425 : 320
+    const validationY = portrait ? 485 : 376
+    const playY = portrait ? 590 : 430
+    const howToY = portrait ? 710 : 520
+    const leaderboardY = portrait ? 830 : 610
+    const buttonWidth = portrait ? 500 : 320
+
+    this.inputLogicalX = centerX
+    this.inputLogicalY = inputY
+    this.inputLogicalWidth = portrait ? 520 : 380
+    this.inputLogicalHeight = portrait ? 68 : 56
+
     createBookFairBackground(this)
-    createPaperPanel(this, centerX, 390, 650, 580)
-    createBrandLabel(this, 78)
+    createPaperPanel(this, centerX, panelY, panelWidth, panelHeight)
+    createBrandLabel(this, brandY)
 
     this.add
-      .text(centerX, 153, 'CATCH THE FALLING BOOKS', {
+      .text(centerX, titleY, 'CATCH THE FALLING BOOKS', {
         color: '#1f3a5f',
         fontFamily: 'Arial, sans-serif',
         fontSize: '42px',
         fontStyle: 'bold',
       })
       .setOrigin(0.5)
+      .setWordWrapWidth(portrait ? 620 : 650)
 
     this.add
-      .text(centerX, 207, 'Catch the books. Avoid the distractions!', {
+      .text(centerX, subtitleY, 'Catch the books. Avoid the distractions!', {
         color: '#3d3d3d',
         fontFamily: 'Arial, sans-serif',
         fontSize: '25px',
       })
       .setOrigin(0.5)
+      .setWordWrapWidth(portrait ? 590 : 650)
 
     this.add
-      .text(centerX, 267, 'PLAYER NAME', {
+      .text(centerX, playerLabelY, 'PLAYER NAME', {
         color: '#1f3a5f',
         fontFamily: 'Arial, sans-serif',
         fontSize: '22px',
@@ -53,10 +80,10 @@ export class HomeScene extends Phaser.Scene {
       })
       .setOrigin(0.5)
 
-    this.createNameInput(centerX)
+    this.createNameInput()
 
     this.validationText = this.add
-      .text(centerX, 376, '', {
+      .text(centerX, validationY, '', {
         color: '#b42318',
         fontFamily: 'Arial, sans-serif',
         fontSize: '19px',
@@ -64,13 +91,30 @@ export class HomeScene extends Phaser.Scene {
       })
       .setOrigin(0.5)
 
-    createTextButton(this, centerX, 430, 'PLAY', () => this.startGame())
-    createTextButton(this, centerX, 520, 'HOW TO PLAY', () => {
-      this.startInformationalScene(SCENE_KEYS.HOW_TO_PLAY)
-    })
-    createTextButton(this, centerX, 610, 'LEADERBOARD', () => {
-      this.startInformationalScene(SCENE_KEYS.LEADERBOARD)
-    })
+    createTextButton(
+      this,
+      centerX,
+      playY,
+      'PLAY',
+      () => this.startGame(),
+      { width: buttonWidth, height: portrait ? 90 : 80, radius: 16 },
+    )
+    createTextButton(
+      this,
+      centerX,
+      howToY,
+      'HOW TO PLAY',
+      () => this.startInformationalScene(SCENE_KEYS.HOW_TO_PLAY),
+      { width: buttonWidth, height: portrait ? 90 : 80, radius: 16 },
+    )
+    createTextButton(
+      this,
+      centerX,
+      leaderboardY,
+      'LEADERBOARD',
+      () => this.startInformationalScene(SCENE_KEYS.LEADERBOARD),
+      { width: buttonWidth, height: portrait ? 90 : 80, radius: 16 },
+    )
 
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, this.handleShutdown, this)
     window.addEventListener('resize', this.scheduleNameInputPosition)
@@ -83,7 +127,7 @@ export class HomeScene extends Phaser.Scene {
     this.scheduleNameInputPosition()
   }
 
-  private createNameInput(x: number): void {
+  private createNameInput(): void {
     const input = document.createElement('input')
     input.className = 'player-name-input'
     input.type = 'text'
@@ -98,7 +142,7 @@ export class HomeScene extends Phaser.Scene {
 
     this.nameInput = input
     document.body.append(input)
-    this.positionNameInput(x, 320)
+    this.positionNameInput()
   }
 
   private readonly scheduleNameInputPosition = (): void => {
@@ -108,24 +152,29 @@ export class HomeScene extends Phaser.Scene {
 
     this.positionFrame = window.requestAnimationFrame(() => {
       this.positionFrame = undefined
-      this.positionNameInput(GAME_WIDTH / 2, 320)
+      this.positionNameInput()
     })
   }
 
-  private positionNameInput(logicalX: number, logicalY: number): void {
+  private positionNameInput(): void {
     if (!this.nameInput) {
       return
     }
 
     const canvasBounds = this.game.canvas.getBoundingClientRect()
-    const scale = canvasBounds.width / GAME_WIDTH
-    const inputWidth = Math.min(380 * scale, canvasBounds.width - 32)
-    const inputHeight = Math.max(40, 56 * scale)
-    this.nameInput.style.left = `${canvasBounds.left + logicalX * scale}px`
-    this.nameInput.style.top = `${canvasBounds.top + logicalY * scale}px`
+    const gameSize = this.scale.gameSize
+    const scaleX = canvasBounds.width / gameSize.width
+    const scaleY = canvasBounds.height / gameSize.height
+    const inputWidth = Math.min(
+      this.inputLogicalWidth * scaleX,
+      canvasBounds.width - 32,
+    )
+    const inputHeight = Math.max(40, this.inputLogicalHeight * scaleY)
+    this.nameInput.style.left = `${canvasBounds.left + this.inputLogicalX * scaleX}px`
+    this.nameInput.style.top = `${canvasBounds.top + this.inputLogicalY * scaleY}px`
     this.nameInput.style.width = `${inputWidth}px`
     this.nameInput.style.height = `${inputHeight}px`
-    this.nameInput.style.fontSize = `${Math.max(16, 24 * scale)}px`
+    this.nameInput.style.fontSize = `${Math.max(16, 24 * scaleY)}px`
   }
 
   private readonly handleNameInput = (): void => {

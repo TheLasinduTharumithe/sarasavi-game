@@ -1,10 +1,9 @@
 import Phaser from 'phaser'
 import {
   GAME_DURATION,
-  GAME_HEIGHT,
-  GAME_WIDTH,
   SCENE_KEYS,
 } from '../game/constants'
+import { getSceneDimensions } from '../game/layout'
 import { RoundTimerManager } from '../game/managers/RoundTimerManager'
 import { ScoreManager } from '../game/managers/ScoreManager'
 import { SpawnManager } from '../game/managers/SpawnManager'
@@ -55,19 +54,49 @@ export class GameScene extends Phaser.Scene {
       return
     }
 
-    createBookFairBackground(this, { gameplay: true })
-    createPaperPanel(this, 224, 66, 170, 94)
-    createPaperPanel(this, GAME_WIDTH - 224, 66, 170, 94)
+    const { width, portrait } = getSceneDimensions(this)
+    const hudY = portrait ? 105 : 66
+    const hudPanelWidth = portrait ? 210 : 170
+    const hudPanelHeight = portrait ? 120 : 94
+    const scorePanelX = portrait ? 130 : 224
+    const timePanelX = portrait ? width - 130 : width - 224
+    const titleY = portrait ? 205 : 62
 
-    createLogoSeal(this, GAME_WIDTH / 2 - 205, 62, 48).setDepth(101)
+    createBookFairBackground(this, { gameplay: true })
+    createPaperPanel(
+      this,
+      scorePanelX,
+      hudY,
+      hudPanelWidth,
+      hudPanelHeight,
+    )
+    createPaperPanel(
+      this,
+      timePanelX,
+      hudY,
+      hudPanelWidth,
+      hudPanelHeight,
+    )
+
+    createLogoSeal(
+      this,
+      portrait ? 150 : width / 2 - 205,
+      titleY,
+      portrait ? 54 : 48,
+    ).setDepth(101)
 
     this.add
-      .text(GAME_WIDTH / 2 + 28, 62, 'CATCH THE BOOKS', {
+      .text(
+        portrait ? 425 : width / 2 + 28,
+        titleY,
+        'CATCH THE BOOKS',
+        {
         color: '#1f3a5f',
         fontFamily: 'Arial, sans-serif',
-        fontSize: '38px',
+        fontSize: portrait ? '34px' : '38px',
         fontStyle: 'bold',
-      })
+        },
+      )
       .setOrigin(0.5)
       .setDepth(101)
 
@@ -171,11 +200,15 @@ export class GameScene extends Phaser.Scene {
       totalDistractionsCaught: 0,
     }
 
+    const { width, height, portrait } = getSceneDimensions(this)
+    const centerX = width / 2
+    const centerY = height / 2
+
     const timeUpText = this.add
-      .text(GAME_WIDTH / 2, GAME_HEIGHT / 2, "TIME'S UP!", {
+      .text(centerX, centerY, "TIME'S UP!", {
         color: '#c0392b',
         fontFamily: 'Arial, sans-serif',
-        fontSize: '76px',
+        fontSize: portrait ? '66px' : '76px',
         fontStyle: 'bold',
         stroke: '#ffffff',
         strokeThickness: 8,
@@ -197,20 +230,20 @@ export class GameScene extends Phaser.Scene {
 
     createTextButton(
       this,
-      GAME_WIDTH / 2 - 185,
-      GAME_HEIGHT / 2 + 125,
+      portrait ? centerX : centerX - 185,
+      centerY + (portrait ? 150 : 125),
       'PLAY AGAIN',
       () => this.replayGame(),
-      { width: 320, height: 68, radius: 14 },
+      { width: portrait ? 470 : 320, height: 80, radius: 14 },
     ).setDepth(301)
 
     createTextButton(
       this,
-      GAME_WIDTH / 2 + 185,
-      GAME_HEIGHT / 2 + 125,
+      portrait ? centerX : centerX + 185,
+      centerY + (portrait ? 270 : 125),
       'VIEW RESULTS',
       () => this.openResultScene(stats),
-      { width: 320, height: 68, radius: 14 },
+      { width: portrait ? 470 : 320, height: 80, radius: 14 },
     ).setDepth(301)
 
     if (prefersReducedMotion()) {
@@ -244,7 +277,9 @@ export class GameScene extends Phaser.Scene {
 
   private handleShutdown(): void {
     this.events.off(Phaser.Scenes.Events.SHUTDOWN, this.handleShutdown, this)
-    this.basketItemOverlap?.destroy()
+
+    // Arcade Physics owns colliders and destroys them during Scene shutdown.
+    // Avoid touching a collider whose World may already have been disposed.
     this.spawnManager?.destroy()
     this.roundTimer?.destroy()
     this.scoreManager?.stop()
