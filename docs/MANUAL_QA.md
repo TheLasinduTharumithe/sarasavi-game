@@ -11,6 +11,7 @@ Record browser/device versions and attach screenshots or console output for fail
 - [ ] Left/Right Arrow and A/D move the basket smoothly.
 - [ ] Basket never crosses the playfield edges.
 - [ ] The sound control works with mouse and keyboard focus.
+- [ ] Full Screen enters fullscreen, Escape updates it to Exit state, and the button can exit fullscreen.
 
 ## Core round
 

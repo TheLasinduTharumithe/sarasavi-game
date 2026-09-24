@@ -34,6 +34,7 @@ The score never drops below zero. The spawn interval shortens and falling speed 
 - Keyboard, mouse, and touch controls
 - Original scalable basket, book, golden-book, phone, coffee, and bookshop visuals
 - Persistent mute control with browser-safe audio activation
+- Browser fullscreen control with Escape/exit-state synchronization
 - Reduced-motion support and large touch targets
 - Anonymous Firebase sign-in and one-document-per-round score submission
 - Top-ten daily Firestore leaderboard
